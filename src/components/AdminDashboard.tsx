@@ -19,9 +19,13 @@ import {
   Eye,
   Trash2
 } from "lucide-react";
+import { useDemoStore } from "@/context/DemoStore";
+import UploadMaterialForm from "@/components/admin/UploadMaterialForm";
+import AddCatalogDialog from "@/components/admin/AddCatalogDialog";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
+  const { disciplines } = useDemoStore();
 
   const stats = [
     { title: "Total de Usuários", value: "2,847", icon: <Users className="h-6 w-6" />, change: "+12%" },
@@ -182,98 +186,44 @@ const AdminDashboard = () => {
           <h2 className="text-2xl font-bold">Gerenciar Conteúdo</h2>
           <p className="text-muted-foreground">Upload e organização de materiais de estudo</p>
         </div>
-        <Button variant="medical">
-          <Upload className="h-4 w-4 mr-2" />
-          Upload de Arquivo
-        </Button>
+        <div className="flex gap-2">
+          <AddCatalogDialog />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="shadow-soft">
-          <CardHeader>
-            <CardTitle>Novo Upload</CardTitle>
-            <CardDescription>Adicione novo material de estudo</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="file">Arquivo</Label>
-              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 transition-smooth cursor-pointer">
-                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Clique para selecionar ou arraste arquivos aqui</p>
-                <p className="text-xs text-muted-foreground mt-1">PDF, DOC, PPT até 50MB</p>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="title">Título do Material</Label>
-              <Input id="title" placeholder="Ex: Anatomia do Coração - Aula 1" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="discipline">Disciplina</Label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a disciplina" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="anatomia">Anatomia</SelectItem>
-                  <SelectItem value="fisiologia">Fisiologia</SelectItem>
-                  <SelectItem value="cardiologia">Cardiologia</SelectItem>
-                  <SelectItem value="neurologia">Neurologia</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Categoria</Label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="aulas">Aulas</SelectItem>
-                  <SelectItem value="exercicios">Exercícios</SelectItem>
-                  <SelectItem value="resumos">Resumos</SelectItem>
-                  <SelectItem value="casos">Casos Clínicos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea id="description" placeholder="Breve descrição do conteúdo..." />
-            </div>
-            <Button variant="medical" className="w-full">
-              <Upload className="h-4 w-4 mr-2" />
-              Fazer Upload
-            </Button>
-          </CardContent>
-        </Card>
+        <UploadMaterialForm />
 
         <Card className="shadow-soft">
           <CardHeader>
             <CardTitle>Disciplinas</CardTitle>
-            <CardDescription>Gerencie as disciplinas disponíveis</CardDescription>
+            <CardDescription>Resumo por disciplina (contadores em tempo real)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {disciplines.map((discipline, index) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                  <div className="flex items-center space-x-3">
-                    <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <BookOpen className="h-4 w-4 text-primary" />
+              {disciplines.map((discipline) => {
+                const rel = discipline.counters.relatorios;
+                const relTotal = rel.guiaDeEstudo + rel.documentoDeResumo + rel.perguntas + rel.linhaDoTempo;
+                return (
+                  <div key={discipline.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <BookOpen className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{discipline.name}</p>
+                        <p className="text-xs text-muted-foreground">{discipline.course} • 3º período</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-sm">{discipline.name}</p>
-                      <p className="text-xs text-muted-foreground">{discipline.files} arquivos • {discipline.category}</p>
+                    <div className="flex items-center gap-2 text-xs">
+                      <Badge variant="secondary">Slides {discipline.counters.slides}</Badge>
+                      <Badge variant="secondary">Áudio {discipline.counters.resumoAudio}</Badge>
+                      <Badge variant="secondary">Mapa {discipline.counters.mapaMental}</Badge>
+                      <Badge variant="secondary">Relatórios {relTotal}</Badge>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={discipline.status === "Ativa" ? "default" : "secondary"}>
-                      {discipline.status}
-                    </Badge>
-                    <Button variant="ghost" size="sm">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             <Separator className="my-4" />
             <Button variant="outline" className="w-full">

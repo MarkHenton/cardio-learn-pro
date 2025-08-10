@@ -19,10 +19,13 @@ import {
   Grid,
   List
 } from "lucide-react";
+import { useDemoStore } from "@/context/DemoStore";
+import DisciplineMaterialsDrawer from "@/components/student/DisciplineMaterialsDrawer";
 
 const StudentDashboard = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [searchTerm, setSearchTerm] = useState("");
+  const { disciplines: demoDiscs } = useDemoStore();
 
   const userProgress = {
     name: "Ana Silva",
@@ -263,6 +266,35 @@ const StudentDashboard = () => {
                 <List className="h-4 w-4" />
               </Button>
             </div>
+          </div>
+        </div>
+
+        {/* Disciplinas (Demo) - 3º período Uninassau */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-foreground">Disciplinas (Demo)</h2>
+            <Badge variant="secondary">{demoDiscs.length} disciplinas</Badge>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {demoDiscs.map((d) => {
+              const rel = d.counters.relatorios;
+              const relTotal = rel.guiaDeEstudo + rel.documentoDeResumo + rel.perguntas + rel.linhaDoTempo;
+              return (
+                <Card key={d.id} className="shadow-soft hover:shadow-medium transition-smooth">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold">{d.name}</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Slides {d.counters.slides} • Áudio {d.counters.resumoAudio} • Mapa {d.counters.mapaMental} • Relatórios {relTotal}
+                        </p>
+                      </div>
+                      <DisciplineMaterialsDrawer disciplineId={d.id} />
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
 
