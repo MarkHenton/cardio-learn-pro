@@ -1,14 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { 
-  Upload, 
   Users, 
   BookOpen, 
   FileText, 
@@ -16,37 +10,24 @@ import {
   Settings,
   BarChart3,
   Download,
-  Eye,
-  Trash2
+  Eye
 } from "lucide-react";
 import { useDemoStore } from "@/context/DemoStore";
-import UploadMaterialForm from "@/components/admin/UploadMaterialForm";
-import AddCatalogDialog from "@/components/admin/AddCatalogDialog";
+// import UploadMaterialForm from "@/components/admin/UploadMaterialForm";
+// import AddCatalogDialog from "@/components/admin/AddCatalogDialog";
+import { Link, useLocation } from "react-router-dom";
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("overview");
-  const { disciplines } = useDemoStore();
+  const location = useLocation();
+  const activeTabFromUrl = location.pathname.split("/")[2] || "overview";
+  const [activeTab, setActiveTab] = useState(activeTabFromUrl);
+  const { disciplines, subscribers } = useDemoStore();
 
   const stats = [
-    { title: "Total de Usuários", value: "2,847", icon: <Users className="h-6 w-6" />, change: "+12%" },
-    { title: "Disciplinas Ativas", value: "42", icon: <BookOpen className="h-6 w-6" />, change: "+3%" },
+    { title: "Total de Usuários", value: subscribers.length, icon: <Users className="h-6 w-6" />, change: "+12%" },
+    { title: "Disciplinas Ativas", value: disciplines.length, icon: <BookOpen className="h-6 w-6" />, change: "+3%" },
     { title: "Arquivos Totais", value: "1,284", icon: <FileText className="h-6 w-6" />, change: "+8%" },
     { title: "Downloads do Mês", value: "15,847", icon: <Download className="h-6 w-6" />, change: "+23%" }
-  ];
-
-  const recentUsers = [
-    { name: "Ana Silva", email: "ana@email.com", plan: "Premium", status: "Ativo", joined: "2024-01-15" },
-    { name: "João Santos", email: "joao@email.com", plan: "Básico", status: "Ativo", joined: "2024-01-14" },
-    { name: "Maria Costa", email: "maria@email.com", plan: "Premium", status: "Pendente", joined: "2024-01-13" },
-    { name: "Pedro Lima", email: "pedro@email.com", plan: "Institucional", status: "Ativo", joined: "2024-01-12" }
-  ];
-
-  const disciplines = [
-    { name: "Anatomia", files: 45, category: "Básicas", status: "Ativa" },
-    { name: "Fisiologia", files: 38, category: "Básicas", status: "Ativa" },
-    { name: "Cardiologia", files: 52, category: "Clínicas", status: "Ativa" },
-    { name: "Neurologia", files: 29, category: "Clínicas", status: "Em Revisão" },
-    { name: "Cirurgia Geral", files: 41, category: "Cirúrgicas", status: "Ativa" }
   ];
 
   const renderOverview = () => (
@@ -80,7 +61,7 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentUsers.map((user, index) => (
+              {subscribers.slice(0, 4).map((user, index) => (
                 <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                   <div className="space-y-1">
                     <p className="font-medium text-sm">{user.name}</p>
@@ -101,7 +82,7 @@ const AdminDashboard = () => {
         <Card className="shadow-soft">
           <CardHeader>
             <CardTitle>Disciplinas Ativas</CardTitle>
-            <CardDescription>Status das disciplinas por categoria</CardDescription>
+            <CardDescription>Status das disciplinas por curso</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -109,13 +90,13 @@ const AdminDashboard = () => {
                 <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                   <div className="space-y-1">
                     <p className="font-medium text-sm">{discipline.name}</p>
-                    <p className="text-xs text-muted-foreground">{discipline.files} arquivos</p>
+                    <p className="text-xs text-muted-foreground">{discipline.course}</p>
                   </div>
                   <div className="text-right space-y-1">
-                    <Badge variant={discipline.status === "Ativa" ? "default" : "secondary"}>
-                      {discipline.status}
+                    <Badge variant={"default"}>
+                      Ativa
                     </Badge>
-                    <p className="text-xs text-muted-foreground">{discipline.category}</p>
+                    <p className="text-xs text-muted-foreground">{discipline.course}</p>
                   </div>
                 </div>
               ))}
@@ -146,7 +127,7 @@ const AdminDashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {recentUsers.map((user, index) => (
+            {subscribers.map((user, index) => (
               <div key={index} className="flex items-center justify-between p-4 rounded-lg border bg-gradient-card">
                 <div className="flex items-center space-x-4">
                   <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -187,12 +168,12 @@ const AdminDashboard = () => {
           <p className="text-muted-foreground">Upload e organização de materiais de estudo</p>
         </div>
         <div className="flex gap-2">
-          <AddCatalogDialog />
+          {/* <AddCatalogDialog /> */}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <UploadMaterialForm />
+        {/* <UploadMaterialForm /> */}
 
         <Card className="shadow-soft">
           <CardHeader>
@@ -236,11 +217,20 @@ const AdminDashboard = () => {
     </div>
   );
 
+  const renderSettings = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Configurações</h2>
+      <p className="text-muted-foreground">
+        Esta é a página de configurações. O conteúdo para esta seção pode ser adicionado aqui.
+      </p>
+    </div>
+  );
+
   const tabs = [
-    { id: "overview", label: "Visão Geral", icon: <BarChart3 className="h-4 w-4" /> },
-    { id: "users", label: "Usuários", icon: <Users className="h-4 w-4" /> },
-    { id: "content", label: "Conteúdo", icon: <BookOpen className="h-4 w-4" /> },
-    { id: "settings", label: "Configurações", icon: <Settings className="h-4 w-4" /> }
+    { id: "overview", label: "Visão Geral", icon: <BarChart3 className="h-4 w-4" />, href: "/admin" },
+    { id: "users", label: "Usuários", icon: <Users className="h-4 w-4" />, href: "/admin/users" },
+    { id: "content", label: "Conteúdo", icon: <BookOpen className="h-4 w-4" />, href: "/admin/content" },
+    { id: "settings", label: "Configurações", icon: <Settings className="h-4 w-4" />, href: "/admin/settings" }
   ];
 
   return (
@@ -256,7 +246,9 @@ const AdminDashboard = () => {
           </div>
           <div className="flex items-center space-x-4">
             <Badge variant="secondary">Admin</Badge>
-            <Button variant="outline" size="sm">Sair</Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/">Sair</Link>
+            </Button>
           </div>
         </div>
       </header>
@@ -265,8 +257,9 @@ const AdminDashboard = () => {
         {/* Navigation Tabs */}
         <div className="flex space-x-1 mb-8 p-1 bg-muted rounded-lg w-fit">
           {tabs.map((tab) => (
-            <button
+            <Link
               key={tab.id}
+              to={tab.href}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-smooth ${
                 activeTab === tab.id
@@ -276,7 +269,7 @@ const AdminDashboard = () => {
             >
               {tab.icon}
               <span>{tab.label}</span>
-            </button>
+            </Link>
           ))}
         </div>
 
@@ -284,6 +277,7 @@ const AdminDashboard = () => {
         {activeTab === "overview" && renderOverview()}
         {activeTab === "users" && renderUserManagement()}
         {activeTab === "content" && renderContentManagement()}
+        {activeTab === "settings" && renderSettings()}
       </div>
     </div>
   );

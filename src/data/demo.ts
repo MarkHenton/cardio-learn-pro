@@ -41,5 +41,15 @@ export const demoDisciplines: Discipline[] = disciplineNames.map((name, idx) => 
   course: "Medicina",
   periodId: demoPeriod.id,
   universityId: demoUniversity.id,
-  counters: makeCounters(),
+  counters: {
+    slides: 0,
+    resumoAudio: 0,
+    mapaMental: 0,
+    relatorios: {
+      guiaDeEstudo: 0,
+      documentoDeResumo: 0,
+      perguntas: 0,
+      linhaDoTempo: 0,
+    },
+  },
 }));

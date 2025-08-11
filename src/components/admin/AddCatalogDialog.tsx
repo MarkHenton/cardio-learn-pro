@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,18 @@ export default function AddCatalogDialog() {
 
   // Fields
   const [universityId, setUniversityId] = useState(universities[0]?.id ?? "");
-  const [periodId, setPeriodId] = useState(periods[0]?.id ?? "");
+  const [periodId, setPeriodId] = useState("");
   const [name, setName] = useState("");
+  
+  const filteredPeriods = periods.filter((p) => p.universityId === universityId);
+
+  useEffect(() => {
+    if (filteredPeriods.length > 0) {
+      setPeriodId(filteredPeriods[0].id);
+    } else {
+      setPeriodId("");
+    }
+  }, [universityId, periods]);
 
   const onCreate = () => {
     if (!name) return;
@@ -79,7 +89,7 @@ export default function AddCatalogDialog() {
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
-                  {periods.filter((p) => p.universityId === universityId).map((p) => (
+                  {filteredPeriods.map((p) => (
                     <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                   ))}
                 </SelectContent>

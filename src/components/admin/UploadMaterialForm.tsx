@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,8 +34,8 @@ function fileIcon(ext: string) {
 export default function UploadMaterialForm() {
   const { universities, periods, disciplines, addMaterial } = useDemoStore();
   const [universityId, setUniversityId] = useState(universities[0]?.id ?? "");
-  const [periodId, setPeriodId] = useState(periods[0]?.id ?? "");
-  const [disciplineId, setDisciplineId] = useState(disciplines[0]?.id ?? "");
+  const [periodId, setPeriodId] = useState("");
+  const [disciplineId, setDisciplineId] = useState("");
   const [category, setCategory] = useState<Category | "">("");
   const [subcategory, setSubcategory] = useState<RelatorioSubcategory | undefined>();
   const [title, setTitle] = useState("");
@@ -46,6 +46,23 @@ export default function UploadMaterialForm() {
 
   const filteredPeriods = periods.filter((p) => p.universityId === universityId);
   const filteredDisciplines = disciplines.filter((d) => d.universityId === universityId && d.periodId === periodId);
+  
+  useEffect(() => {
+    if (filteredPeriods.length > 0) {
+      setPeriodId(filteredPeriods[0].id);
+    } else {
+      setPeriodId("");
+    }
+  }, [universityId, periods]);
+
+  useEffect(() => {
+    if (filteredDisciplines.length > 0) {
+      setDisciplineId(filteredDisciplines[0].id);
+    } else {
+      setDisciplineId("");
+    }
+  }, [periodId, disciplines]);
+
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();

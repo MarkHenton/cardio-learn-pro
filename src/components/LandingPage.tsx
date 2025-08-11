@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Users, Upload, Shield, Star, CheckCircle } from "lucide-react";
 import heroImage from "@/assets/hero-medical.jpg";
+import { Link } from "react-router-dom";
 
 const LandingPage = () => {
   const features = [
@@ -110,8 +111,15 @@ const LandingPage = () => {
             <a href="#features" className="text-foreground/80 hover:text-foreground transition-smooth">Recursos</a>
             <a href="#pricing" className="text-foreground/80 hover:text-foreground transition-smooth">Planos</a>
             <a href="#testimonials" className="text-foreground/80 hover:text-foreground transition-smooth">Depoimentos</a>
-            <Button variant="outline" size="sm">Entrar</Button>
-            <Button variant="medical" size="sm">Começar Agora</Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/admin">Admin</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/student">Entrar</Link>
+            </Button>
+            <Button asChild variant="medical" size="sm">
+              <Link to="/student">Começar Agora</Link>
+            </Button>
           </nav>
         </div>
       </header>
@@ -133,11 +141,11 @@ const LandingPage = () => {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button variant="hero" size="lg" className="text-lg px-8 py-6">
-                  Começar Gratuitamente
+                <Button asChild variant="hero" size="lg" className="text-lg px-8 py-6">
+                  <Link to="/student">Começar Gratuitamente</Link>
                 </Button>
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                  Ver Demonstração
+                <Button asChild variant="outline" size="lg" className="text-lg px-8 py-6">
+                  <Link to="/student">Ver Demonstração</Link>
                 </Button>
               </div>
               <div className="flex items-center space-x-8 text-sm text-muted-foreground">
@@ -227,16 +235,23 @@ const LandingPage = () => {
                     {plan.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-center space-x-3">
                         <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
+                        {feature === "Dashboard administrativo" ? (
+                          <Link to="/admin" className="text-sm hover:underline">{feature}</Link>
+                        ) : (
+                          <span className="text-sm">{feature}</span>
+                        )}
                       </li>
                     ))}
                   </ul>
                   <Button 
+                    asChild
                     variant={plan.popular ? "hero" : "outline"} 
                     className="w-full"
                     size="lg"
                   >
-                    {plan.popular ? "Escolher Premium" : "Escolher Plano"}
+                    <Link to="/student">
+                      {plan.popular ? "Escolher Premium" : "Escolher Plano"}
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -287,8 +302,8 @@ const LandingPage = () => {
             <p className="text-xl opacity-90">
               Junte-se a milhares de estudantes que já estão transformando sua jornada médica
             </p>
-            <Button variant="secondary" size="lg" className="text-lg px-8 py-6">
-              Começar Gratuitamente
+            <Button asChild variant="secondary" size="lg" className="text-lg px-8 py-6">
+              <Link to="/student">Começar Gratuitamente</Link>
             </Button>
           </div>
         </div>

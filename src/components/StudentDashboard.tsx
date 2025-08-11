@@ -8,10 +8,8 @@ import {
   BookOpen, 
   Download, 
   Search, 
-  Play, 
   FileText, 
   Star,
-  Clock,
   User,
   Settings,
   LogOut,
@@ -21,90 +19,30 @@ import {
 } from "lucide-react";
 import { useDemoStore } from "@/context/DemoStore";
 import DisciplineMaterialsDrawer from "@/components/student/DisciplineMaterialsDrawer";
+import { Link } from "react-router-dom";
 
 const StudentDashboard = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [searchTerm, setSearchTerm] = useState("");
-  const { disciplines: demoDiscs } = useDemoStore();
-
-  const userProgress = {
-    name: "Ana Silva",
-    plan: "Premium",
-    totalDisciplines: 12,
-    completedDisciplines: 8,
-    totalFiles: 245,
-    downloadedFiles: 156,
-    studyStreak: 15
+  const { disciplines, subscribers } = useDemoStore();
+  
+  const currentUser = subscribers.length > 0 ? subscribers[0] : {
+    name: "Usuário",
+    plan: "Básico",
+    status: "Ativo",
+    email: "user@example.com",
+    id: "sub_placeholder"
   };
 
-  const disciplines = [
-    {
-      id: 1,
-      name: "Anatomia Humana",
-      category: "Básicas",
-      progress: 85,
-      totalFiles: 45,
-      completedFiles: 38,
-      lastAccess: "2 horas atrás",
-      color: "bg-blue-100 text-blue-800",
-      icon: "🫀"
-    },
-    {
-      id: 2,
-      name: "Fisiologia",
-      category: "Básicas",
-      progress: 72,
-      totalFiles: 38,
-      completedFiles: 27,
-      lastAccess: "1 dia atrás",
-      color: "bg-green-100 text-green-800",
-      icon: "🧬"
-    },
-    {
-      id: 3,
-      name: "Cardiologia",
-      category: "Clínicas",
-      progress: 45,
-      totalFiles: 52,
-      completedFiles: 23,
-      lastAccess: "3 dias atrás",
-      color: "bg-red-100 text-red-800",
-      icon: "❤️"
-    },
-    {
-      id: 4,
-      name: "Neurologia",
-      category: "Clínicas",
-      progress: 30,
-      totalFiles: 29,
-      completedFiles: 9,
-      lastAccess: "1 semana atrás",
-      color: "bg-purple-100 text-purple-800",
-      icon: "🧠"
-    },
-    {
-      id: 5,
-      name: "Farmacologia",
-      category: "Básicas",
-      progress: 60,
-      totalFiles: 34,
-      completedFiles: 20,
-      lastAccess: "2 dias atrás",
-      color: "bg-orange-100 text-orange-800",
-      icon: "💊"
-    },
-    {
-      id: 6,
-      name: "Patologia",
-      category: "Clínicas",
-      progress: 15,
-      totalFiles: 41,
-      completedFiles: 6,
-      lastAccess: "5 dias atrás",
-      color: "bg-yellow-100 text-yellow-800",
-      icon: "🔬"
-    }
-  ];
+  const userProgress = {
+    name: currentUser.name,
+    plan: currentUser.plan,
+    totalDisciplines: disciplines.length,
+    completedDisciplines: 8, // Placeholder
+    totalFiles: 245, // Placeholder
+    downloadedFiles: 156, // Placeholder
+    studyStreak: 15 // Placeholder
+  };
 
   const recentFiles = [
     {
@@ -132,7 +70,7 @@ const StudentDashboard = () => {
 
   const filteredDisciplines = disciplines.filter(discipline =>
     discipline.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    discipline.category.toLowerCase().includes(searchTerm.toLowerCase())
+    discipline.course.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -148,11 +86,15 @@ const StudentDashboard = () => {
           </div>
           <div className="flex items-center space-x-4">
             <Badge className="bg-primary text-primary-foreground">{userProgress.plan}</Badge>
-            <Button variant="ghost" size="sm">
-              <Settings className="h-4 w-4" />
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/student/settings">
+                <Settings className="h-4 w-4" />
+              </Link>
             </Button>
-            <Button variant="ghost" size="sm">
-              <LogOut className="h-4 w-4" />
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/">
+                <LogOut className="h-4 w-4" />
+              </Link>
             </Button>
           </div>
         </div>
@@ -268,41 +210,12 @@ const StudentDashboard = () => {
             </div>
           </div>
         </div>
-
-        {/* Disciplinas (Demo) - 3º período Uninassau */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-foreground">Disciplinas (Demo)</h2>
-            <Badge variant="secondary">{demoDiscs.length} disciplinas</Badge>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {demoDiscs.map((d) => {
-              const rel = d.counters.relatorios;
-              const relTotal = rel.guiaDeEstudo + rel.documentoDeResumo + rel.perguntas + rel.linhaDoTempo;
-              return (
-                <Card key={d.id} className="shadow-soft hover:shadow-medium transition-smooth">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold">{d.name}</h3>
-                        <p className="text-xs text-muted-foreground">
-                          Slides {d.counters.slides} • Áudio {d.counters.resumoAudio} • Mapa {d.counters.mapaMental} • Relatórios {relTotal}
-                        </p>
-                      </div>
-                      <DisciplineMaterialsDrawer disciplineId={d.id} />
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Disciplines Section */}
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-foreground">Suas Disciplinas</h2>
+              <h2 className="text-2xl font-bold text-foreground">Disciplinas</h2>
               <Badge variant="secondary">{filteredDisciplines.length} disciplinas</Badge>
             </div>
 
@@ -313,13 +226,15 @@ const StudentDashboard = () => {
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className="text-2xl">{discipline.icon}</div>
+                          <div className="text-2xl">
+                            <BookOpen className="h-8 w-8" />
+                          </div>
                           <div>
                             <CardTitle className="text-lg group-hover:text-primary transition-smooth">
                               {discipline.name}
                             </CardTitle>
-                            <Badge className={discipline.color} variant="secondary">
-                              {discipline.category}
+                            <Badge variant="secondary">
+                              {discipline.course}
                             </Badge>
                           </div>
                         </div>
@@ -329,23 +244,11 @@ const StudentDashboard = () => {
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Progresso</span>
-                          <span className="font-medium">{discipline.progress}%</span>
+                          <span className="font-medium">75%</span>
                         </div>
-                        <Progress value={discipline.progress} />
+                        <Progress value={75} />
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          {discipline.completedFiles}/{discipline.totalFiles} arquivos
-                        </span>
-                        <span className="text-muted-foreground flex items-center">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {discipline.lastAccess}
-                        </span>
-                      </div>
-                      <Button variant="medical" className="w-full">
-                        <Play className="h-4 w-4 mr-2" />
-                        Continuar Estudos
-                      </Button>
+                      <DisciplineMaterialsDrawer disciplineId={discipline.id} />
                     </CardContent>
                   </Card>
                 ))}
@@ -357,30 +260,24 @@ const StudentDashboard = () => {
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                          <div className="text-2xl">{discipline.icon}</div>
+                          <div className="text-2xl">
+                            <BookOpen className="h-8 w-8" />
+                          </div>
                           <div>
                             <h3 className="font-semibold text-lg">{discipline.name}</h3>
                             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                              <Badge className={discipline.color} variant="secondary">
-                                {discipline.category}
+                              <Badge variant="secondary">
+                                {discipline.course}
                               </Badge>
-                              <span>{discipline.completedFiles}/{discipline.totalFiles} arquivos</span>
-                              <span className="flex items-center">
-                                <Clock className="h-3 w-3 mr-1" />
-                                {discipline.lastAccess}
-                              </span>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center space-x-4">
                           <div className="text-right">
-                            <p className="text-sm font-medium">{discipline.progress}%</p>
-                            <Progress value={discipline.progress} className="w-24" />
+                            <p className="text-sm font-medium">75%</p>
+                            <Progress value={75} className="w-24" />
                           </div>
-                          <Button variant="medical">
-                            <Play className="h-4 w-4 mr-2" />
-                            Continuar
-                          </Button>
+                          <DisciplineMaterialsDrawer disciplineId={discipline.id} />
                         </div>
                       </div>
                     </CardContent>
@@ -457,9 +354,11 @@ const StudentDashboard = () => {
                   <Star className="h-4 w-4 mr-2" />
                   Favoritos
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Configurações
+                <Button asChild variant="outline" className="w-full justify-start">
+                  <Link to="/student/settings">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Configurações
+                  </Link>
                 </Button>
               </CardContent>
             </Card>
