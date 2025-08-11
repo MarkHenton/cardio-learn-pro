@@ -13,9 +13,10 @@ import {
   Eye
 } from "lucide-react";
 import { useDemoStore } from "@/context/DemoStore";
-// import UploadMaterialForm from "@/components/admin/UploadMaterialForm";
-// import AddCatalogDialog from "@/components/admin/AddCatalogDialog";
+import UploadMaterialForm from "@/components/admin/UploadMaterialForm";
+import AddCatalogDialog from "@/components/admin/AddCatalogDialog";
 import { Link, useLocation } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 
 const AdminDashboard = () => {
   const location = useLocation();
@@ -168,12 +169,12 @@ const AdminDashboard = () => {
           <p className="text-muted-foreground">Upload e organização de materiais de estudo</p>
         </div>
         <div className="flex gap-2">
-          {/* <AddCatalogDialog /> */}
+          <AddCatalogDialog />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* <UploadMaterialForm /> */}
+        <UploadMaterialForm />
 
         <Card className="shadow-soft">
           <CardHeader>
@@ -183,8 +184,10 @@ const AdminDashboard = () => {
           <CardContent>
             <div className="space-y-4">
               {disciplines.map((discipline) => {
-                const rel = discipline.counters.relatorios;
-                const relTotal = rel.guiaDeEstudo + rel.documentoDeResumo + rel.perguntas + rel.linhaDoTempo;
+                const counters = discipline.counters || {};
+                const rel = counters.relatorios || {};
+                const relTotal = (rel.guiaDeEstudo || 0) + (rel.documentoDeResumo || 0) + (rel.perguntas || 0) + (rel.linhaDoTempo || 0);
+                
                 return (
                   <div key={discipline.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                     <div className="flex items-center space-x-3">
@@ -197,9 +200,9 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
-                      <Badge variant="secondary">Slides {discipline.counters.slides}</Badge>
-                      <Badge variant="secondary">Áudio {discipline.counters.resumoAudio}</Badge>
-                      <Badge variant="secondary">Mapa {discipline.counters.mapaMental}</Badge>
+                      <Badge variant="secondary">Slides {counters.slides || 0}</Badge>
+                      <Badge variant="secondary">Áudio {counters.resumoAudio || 0}</Badge>
+                      <Badge variant="secondary">Mapa {counters.mapaMental || 0}</Badge>
                       <Badge variant="secondary">Relatórios {relTotal}</Badge>
                     </div>
                   </div>
