@@ -1,3 +1,5 @@
+// src/components/StudentDashboard.tsx
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,23 +22,18 @@ import {
 import { useDemoStore } from "@/context/DemoStore";
 import DisciplineMaterialsDrawer from "@/components/student/DisciplineMaterialsDrawer";
 import { Link } from "react-router-dom";
+import { auth } from "@/lib/firebaseConfig"; // Importa o auth para o logout
 
 const StudentDashboard = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [searchTerm, setSearchTerm] = useState("");
   const { disciplines, subscribers } = useDemoStore();
   
-  const currentUser = subscribers.length > 0 ? subscribers[0] : {
-    name: "Usuário",
-    plan: "Básico",
-    status: "Ativo",
-    email: "user@example.com",
-    id: "sub_placeholder"
-  };
+  const currentUser = auth.currentUser; // Pega o usuário logado do Firebase
 
   const userProgress = {
-    name: currentUser.name,
-    plan: currentUser.plan,
+    name: currentUser?.displayName || currentUser?.email || "Usuário",
+    plan: "Premium", // Placeholder
     totalDisciplines: disciplines.length,
     completedDisciplines: 8, // Placeholder
     totalFiles: 245, // Placeholder
@@ -44,33 +41,8 @@ const StudentDashboard = () => {
     studyStreak: 15 // Placeholder
   };
 
-  const recentFiles = [
-    {
-      title: "Sistema Cardiovascular - Introdução",
-      discipline: "Cardiologia",
-      type: "PDF",
-      size: "2.4 MB",
-      downloadedAt: "2 horas atrás"
-    },
-    {
-      title: "Anatomia do Coração",
-      discipline: "Anatomia Humana",
-      type: "PPT",
-      size: "15.2 MB",
-      downloadedAt: "1 dia atrás"
-    },
-    {
-      title: "Casos Clínicos - Arritmias",
-      discipline: "Cardiologia",
-      type: "PDF",
-      size: "1.8 MB",
-      downloadedAt: "2 dias atrás"
-    }
-  ];
-
   const filteredDisciplines = disciplines.filter(discipline =>
-    discipline.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    discipline.course.toLowerCase().includes(searchTerm.toLowerCase())
+    discipline.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -84,17 +56,19 @@ const StudentDashboard = () => {
             </div>
             <span className="text-xl font-bold">MedStudy</span>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             <Badge className="bg-primary text-primary-foreground">{userProgress.plan}</Badge>
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/student/settings">
-                <Settings className="h-4 w-4" />
+            {/* Link para a nova página de perfil */}
+            <Button asChild variant="ghost" size="icon">
+              <Link to="/student/profile" title="Meu Perfil">
+                <User className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/">
-                <LogOut className="h-4 w-4" />
-              </Link>
+            <Button variant="ghost" size="icon" title="Configurações">
+              <Settings className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" title="Sair" onClick={() => signOut(auth)}>
+              <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -111,7 +85,7 @@ const StudentDashboard = () => {
           </p>
         </div>
 
-        {/* Stats Overview */}
+        {/* O restante do seu componente continua igual... */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="shadow-soft hover:shadow-medium transition-smooth">
             <CardContent className="p-6">
@@ -211,16 +185,16 @@ const StudentDashboard = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1">
           {/* Disciplines Section */}
-          <div className="lg:col-span-2">
+          <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-foreground">Disciplinas</h2>
               <Badge variant="secondary">{filteredDisciplines.length} disciplinas</Badge>
             </div>
 
             {viewMode === "grid" ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredDisciplines.map((discipline) => (
                   <Card key={discipline.id} className="shadow-soft hover:shadow-medium transition-smooth cursor-pointer group">
                     <CardHeader className="pb-3">
@@ -285,83 +259,6 @@ const StudentDashboard = () => {
                 ))}
               </div>
             )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Recent Downloads */}
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle className="text-lg">Downloads Recentes</CardTitle>
-                <CardDescription>Seus últimos materiais baixados</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {recentFiles.map((file, index) => (
-                  <div key={index} className="flex items-start space-x-3 p-3 rounded-lg bg-muted/30">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <FileText className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{file.title}</p>
-                      <p className="text-xs text-muted-foreground">{file.discipline}</p>
-                      <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
-                        <span>{file.type}</span>
-                        <span>•</span>
-                        <span>{file.size}</span>
-                        <span>•</span>
-                        <span>{file.downloadedAt}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <Button variant="outline" className="w-full">
-                  Ver Todos
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Study Goals */}
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle className="text-lg">Meta Semanal</CardTitle>
-                <CardDescription>Acompanhe seu progresso</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-primary">4/7</p>
-                    <p className="text-sm text-muted-foreground">dias estudados esta semana</p>
-                  </div>
-                  <Progress value={57} />
-                  <p className="text-sm text-muted-foreground text-center">
-                    Faltam apenas 3 dias para bater sua meta!
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle className="text-lg">Ações Rápidas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start">
-                  <Download className="h-4 w-4 mr-2" />
-                  Baixar Materiais
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Star className="h-4 w-4 mr-2" />
-                  Favoritos
-                </Button>
-                <Button asChild variant="outline" className="w-full justify-start">
-                  <Link to="/student/settings">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Configurações
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

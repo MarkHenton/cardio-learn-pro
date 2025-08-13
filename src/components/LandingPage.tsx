@@ -114,9 +114,11 @@ const LandingPage = () => {
             <Button asChild variant="outline" size="sm">
               <Link to="/admin">Admin</Link>
             </Button>
+            {/* ROTA CORRIGIDA */}
             <Button asChild variant="outline" size="sm">
               <Link to="/student">Entrar</Link>
             </Button>
+            {/* ROTA CORRIGIDA */}
             <Button asChild variant="medical" size="sm">
               <Link to="/student">Começar Agora</Link>
             </Button>
@@ -175,6 +177,7 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* O restante do seu componente continua igual... */}
       {/* Features Section */}
       <section id="features" className="py-20 bg-muted/30">
         <div className="container">
