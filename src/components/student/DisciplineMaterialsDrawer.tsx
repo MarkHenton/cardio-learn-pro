@@ -65,28 +65,41 @@ export default function DisciplineMaterialsDrawer({ disciplineId }: { discipline
   }, [open, disciplineId]);
   
   // Função para chamar a Cloud Function que gera o PDF
-  const handleViewPdf = async (material: MaterialFromDB) => {
-      setIsGeneratingPdf(material.id);
-      try {
-          const functions = getFunctions();
-          const generatePdf = httpsCallable(functions, 'generatePdf');
-          const result = await generatePdf({ 
-              storagePath: material.storagePath, 
-              materialTitle: material.title 
-          }) as { data: { pdfBase64: string } };
+ const handleViewPdf = async (material: MaterialFromDB) => {
+  setIsGeneratingPdf(material.id);
+  try {
+    // Usamos o 'fetch' para chamar nossa API na VPS
+    const response = await fetch("http://medscribe.centerpersianas.com.br./generatePdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      // O corpo da requisição precisa ser adaptado para o que nosso novo backend espera.
+      // Vamos assumir que o backend vai precisar do 'storagePath' para encontrar o ficheiro.
+      body: JSON.stringify({ 
+        storagePath: material.storagePath, 
+        materialTitle: material.title 
+      }),
+    });
 
-          const { pdfBase64 } = result.data;
-          const blob = base64ToBlob(pdfBase64);
-          const url = window.URL.createObjectURL(blob);
-          window.open(url, '_blank');
+    if (!response.ok) {
+      // Lança um erro se a resposta da API não for de sucesso
+      throw new Error(`Erro na API: ${response.statusText}`);
+    }
 
-      } catch (error) {
-          console.error("Erro ao gerar PDF:", error);
-          toast({ title: "Erro", description: "Não foi possível gerar o PDF.", variant: "destructive" });
-      } finally {
-          setIsGeneratingPdf(null);
-      }
-  };
+    // O nosso backend Express retorna o PDF diretamente.
+    // Pegamos a resposta como um 'blob' (um tipo de ficheiro).
+    const pdfBlob = await response.blob();
+    
+    // Criamos uma URL temporária para o ficheiro e abrimos numa nova aba.
+    const url = window.URL.createObjectURL(pdfBlob);
+    window.open(url, '_blank');
+
+  } catch (error) {
+    console.error("Erro ao gerar PDF:", error);
+    toast({ title: "Erro", description: "Não foi possível gerar o PDF.", variant: "destructive" });
+  } finally {
+    setIsGeneratingPdf(null);
+  }
+};
 
 
   const byCategory = useMemo(() => ({
