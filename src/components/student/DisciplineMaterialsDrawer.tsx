@@ -68,7 +68,7 @@ export default function DisciplineMaterialsDrawer({ disciplineId }: { discipline
   const handleViewPdf = async (material: MaterialFromDB) => {
     setIsGeneratingPdf(material.id);
     try {
-      const response = await fetch("http://SEU_IP_DA_VPS:3001/generatePdf", {
+      const response = await fetch("medscribe.centerpersianas.com.br/generatePdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // Em vez de 'storagePath', enviamos 'fileName' com o nosso ficheiro de teste.

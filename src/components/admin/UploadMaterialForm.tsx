@@ -49,7 +49,7 @@ export default function UploadMaterialForm({ disciplines, onMaterialAdded }: Upl
       formData.append('materialFile', values.file);
 
       console.log("A enviar o ficheiro para a VPS...");
-      const uploadResponse = await fetch("http://medscribe.centerpersianas.com.br/upload", {
+      const uploadResponse = await fetch("medscribe.centerpersianas.com.br/upload", {
         method: 'POST',
         body: formData,
       });
