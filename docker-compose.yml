@@ -1,27 +1,18 @@
-# A versão do Docker Compose que estamos usando.
-version: '3.8'
-
-# Aqui definimos todos os nossos serviços (contêineres).
+# Versão Final para o Portainer
 services:
-  # O primeiro serviço: nosso site React.
   frontend:
-    # Diz ao Docker para construir a imagem usando o Dockerfile
-    # que está na pasta atual ('.').
-    build: .
-    # O nome que daremos ao contêiner quando ele estiver rodando.
+    # Diz ao Portainer para usar a imagem que construímos manualmente
+    image: cardio-learn-pro-frontend:latest
     container_name: cardio-learn-pro-frontend
-    # Mapeamento de portas: Conecta a porta 8080 da sua VPS (host)
-    # à porta 80 de dentro do contêiner (onde o Nginx está rodando).
-    # Você acessará seu site em http://SEU_IP_DA_VPS:8080
     ports:
       - "8080:80"
 
-  # O segundo serviço: nossa API de gerar PDF.
   backend:
-    # Diz para construir a imagem usando o Dockerfile que está na pasta './functions'.
-    build: ./functions
+    # Diz ao Portainer para usar a imagem que construímos manualmente
+    image: cardio-learn-pro-backend:latest
     container_name: cardio-learn-pro-backend
-    # Mapeamento de portas: Conecta a porta 3001 da sua VPS
-    # à porta 3001 de dentro do contêiner (onde o Express está rodando).
     ports:
       - "3001:3001"
+    # Garante que a pasta de materiais seja persistente
+    volumes:
+      - ./functions/materiais:/app/materiais
