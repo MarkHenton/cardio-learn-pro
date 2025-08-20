@@ -1,22 +1,17 @@
+// --- Importações permanecem as mesmas ---
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { useState } from "react";
 import { Loader2 } from "lucide-react";
-
-// Importações do Firebase (apenas para a base de dados)
 import { db } from "@/lib/firebaseConfig";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import type { Discipline } from "@/types/app";
 
-// Tipos
-import type { Discipline, Category, RelatorioSubcategory } from "@/types/app";
-
-// Esquema de validação do formulário
+// --- O schema de validação permanece o mesmo ---
 const formSchema = z.object({
   title: z.string().min(3, "O título deve ter pelo menos 3 caracteres."),
   disciplineId: z.string().min(1, "Selecione uma disciplina."),
@@ -25,7 +20,6 @@ const formSchema = z.object({
   file: z.instanceof(File).refine(file => file.size > 0, "Selecione um ficheiro."),
 });
 
-// Props do componente
 interface UploadMaterialFormProps {
   disciplines: Discipline[];
   onMaterialAdded: () => void;
@@ -33,69 +27,67 @@ interface UploadMaterialFormProps {
 
 export default function UploadMaterialForm({ disciplines, onMaterialAdded }: UploadMaterialFormProps) {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
+  // MELHORIA 2: Removemos o useState 'isSubmitting'. Vamos usar o do react-hook-form.
+  // const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { title: "", disciplineId: "", category: "", subcategory: "", file: new File([], "") },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true);
+  // Extraímos o formState para facilitar o acesso
+  const { formState } = form;
 
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    // MELHORIA 2: Não precisamos mais do setIsSubmitting(true) aqui.
+    
     try {
-      // --- PASSO 1: ENVIAR O FICHEIRO PARA A VPS ---
       const formData = new FormData();
       formData.append('materialFile', values.file);
 
-      console.log("A enviar o ficheiro para a VPS...");
-      const uploadResponse = await fetch("medscribe.centerpersianas.com.br/upload", {
+      // CORREÇÃO 1: Adicionamos o protocolo "http://" e a porta ":8080" à URL.
+      // DICA: O ideal é colocar essa URL em uma variável de ambiente (.env).
+      const uploadResponse = await fetch("http://medscribe.centerpersianas.com.br:8080/upload", {
         method: 'POST',
         body: formData,
       });
 
       if (!uploadResponse.ok) {
-        throw new Error("Falha ao enviar o ficheiro para o servidor.");
+        // Lembrete: Se der erro aqui, pode ser um problema de CORS no seu backend!
+        // Verifique se o seu servidor Express está usando o middleware 'cors'.
+        throw new Error("Falha ao enviar o ficheiro para o servidor. Verifique o console do navegador e do backend.");
       }
 
       const uploadResult = await uploadResponse.json();
-      const { fileName } = uploadResult; // Nome do ficheiro guardado na VPS
+      const { fileName } = uploadResult;
 
-      console.log("Ficheiro enviado com sucesso. Nome do ficheiro:", fileName);
-
-      // --- PASSO 2: GUARDAR OS DADOS NO FIRESTORE ---
-      console.log("A guardar os metadados no Firestore...");
-      
       await addDoc(collection(db, "materials"), {
         title: values.title,
         disciplineId: values.disciplineId,
         category: values.category,
         subcategory: values.subcategory || null,
-        // Guardamos o nome do ficheiro em vez do URL do Storage
         fileName: fileName,
         fileType: values.file.type,
         createdAt: serverTimestamp(),
       });
       
       toast({ title: "Sucesso", description: "Material adicionado com sucesso!" });
-      onMaterialAdded(); // Para atualizar a lista de materiais
+      onMaterialAdded();
       form.reset();
 
     } catch (error) {
       console.error("Erro no processo de adição de material:", error);
-      toast({ title: "Erro", description: "Não foi possível adicionar o material.", variant: "destructive" });
-    } finally {
-      setIsSubmitting(false);
+      toast({ title: "Erro", description: (error as Error).message || "Não foi possível adicionar o material.", variant: "destructive" });
     }
+    // MELHORIA 2: Não precisamos mais do setIsSubmitting(false) aqui.
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* ... (o resto do seu JSX do formulário continua aqui, sem alterações) ... */}
-        {/* ... (FormField para title, disciplineId, category, etc.) ... */}
-        
-        {/* Campo de Upload de Ficheiro */}
+        {/* ... (O resto do seu JSX do formulário, como os campos de título, disciplina, etc.) ... */}
+
+        {/* Campo de Upload de Ficheiro (sem alterações aqui, já estava bom) */}
         <FormField
           control={form.control}
           name="file"
@@ -104,8 +96,10 @@ export default function UploadMaterialForm({ disciplines, onMaterialAdded }: Upl
               <FormLabel>Ficheiro do Material</FormLabel>
               <FormControl>
                 <Input 
-                  type="file" 
-                  onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}
+                  type="file"
+                  // O 'ref' é opcional, mas ajuda o react-hook-form a focar no campo em caso de erro.
+                  ref={field.ref}
+                  onChange={(e) => field.onChange(e.target.files?.[0])}
                 />
               </FormControl>
               <FormMessage />
@@ -113,8 +107,9 @@ export default function UploadMaterialForm({ disciplines, onMaterialAdded }: Upl
           )}
         />
         
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {/* MELHORIA 2: Usamos formState.isSubmitting para controlar o botão */}
+        <Button type="submit" disabled={formState.isSubmitting} className="w-full">
+          {formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Guardar Material
         </Button>
       </form>
